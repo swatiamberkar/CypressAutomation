@@ -1,0 +1,275 @@
+import Cloud from './Cloud'
+
+describe('Self Service Role', () => {
+    const cloud = new Cloud()
+
+    var employeeId = 'CY1'
+    var employeeId1 = 'CY2'
+    var employeeId1_password = ''
+
+    var role = 'Senior'
+    var description = 'Add for Senior'
+    var role1 = 'Employee'
+    var description1 = 'Add for Employees'
+    var role2 = 'Worker'
+    var description2 = 'Added for Workers'
+    var menu = 'Leave'
+
+    beforeEach(() => {
+        cy.getCookies()
+    })
+
+    it('Login and Change Company', () => {
+        cy.login()
+        cy.changeCompany();
+    })
+
+
+    function clickAddButton() {
+        cy.get('a > .fa').click({ force: true })
+        cy.wait(2000)
+    }
+
+    function selectRolesTab() {
+        cy.visit(Cypress.env('url') + 'Settings/Employee/Index?module=organization&submodule=roles')
+        cy.wait(2000)
+        cy.get('#Organization_Roles').click();
+        cy.wait(2000)
+    }
+
+    function clickSaveButton() {
+        cy.get('#btnSaveRole').click();
+    }
+
+    function enterRole(role) {
+        cy.get('#EssRole').type(role);
+    }
+
+    function closeRolePopup() {
+        cy.get('.btn-danger').click();
+    }
+
+    function assignSelfServiceRole(employeeId, role) {
+        cy.navigate_EmployeeProfile(employeeId)
+        cy.get('#Profile_SelfServiceRole').click({ force: true })
+        cy.get('#SelfServiceRole').select(role, { force: true })
+        cy.get('[onclick="saveSelfServiceRole(this)"]').click({ force: true })
+    }
+
+    function deleteRole() {
+        cy.get(".fa-trash").then((element) => {
+            const item = element.length;
+            cy.get(".fa-trash").eq(item - 1).click({ force: true })
+        })
+        cy.get(".toast-message").click({ force: true })
+    }
+
+    context('Verify Validation', () => {
+        it('Navigate Self Service Role Page & Verify Page Title', () => {
+            cy.visit(Cypress.env('url') + 'Settings/Employee/Index?module=organization&submodule=roles')
+            cy.wait(2000)
+            cloud.verifyPageTitle('SelfService Role')
+        })
+
+        it('By Global Serach, Serach Roles Page & Verify Page Title', () => {
+            cy.get('#globalSearch').click({ force: true }).type('Roles')
+            cy.contains('li', 'Roles').click({ force: true })
+            cloud.verifyPageTitle('SelfService Role')
+        })
+
+        it('Verify Validation - Please Enter Role.', () => {
+            //selectRolesTab()
+            clickAddButton()
+            clickSaveButton()
+            cloud.verifyNotication('Please Enter Role.')
+        })
+
+        it('Verify Validation - Please Enter Unique Role', () => {
+            enterRole(role)
+            clickSaveButton()
+            cloud.verifyNotication('Role Saved Successfully!!!')
+            clickAddButton()
+            enterRole(role)
+            clickSaveButton()
+            cloud.verifyNotication('Please Enter Unique Role')
+            closeRolePopup()
+        })
+
+        it('Verify Validation - Role is Assigned.Cannot be delete', () => {
+            assignSelfServiceRole(employeeId, role)
+            selectRolesTab()
+            cy.get(".fa-trash").then((element) => {
+                const item = element.length;
+                cy.get(".fa-trash").eq(item - 1).click({ force: true })
+                cloud.verifyNotication('Role is Assigned.Cannot be delete')
+            })
+            assignSelfServiceRole(employeeId, 'Admin')
+            selectRolesTab()
+            deleteRole()
+        })
+    })
+
+    context('Save Functionality', () => {
+
+        it('Add Role with description', () => {
+            selectRolesTab()
+            clickAddButton()
+            enterRole(role)
+            cy.get('#description').type(description);
+            clickSaveButton()
+            cloud.verifyNotication('Role Saved Successfully!!!')
+        })
+
+        it('Verify saved Role with description', () => {
+            cy.get(".fa-edit").then((element) => {
+                const itemCount = element.length;
+                //  cy.get(".fa-edit").eq(itemCount - 1).invoke('text').should('eq', role1)
+                cy.get(".fa-edit").eq(itemCount - 1).click({ force: true })
+                cy.get('#EssRole').should('have.value', role);
+                cy.get('#description').should('have.value', description);
+            })
+            closeRolePopup()
+        })
+
+        it('Verify new added Self service role in Employee Profile', () => {
+            cy.navigate_EmployeeProfile(employeeId)
+            cy.get('#Profile_SelfServiceRole').click({ force: true })
+            cy.get('#SelfServiceRole').contains(role)
+        })
+
+        it('Set Self service role in Employee Profile', () => {
+            cy.get('#SelfServiceRole').select(role)
+            cy.get('[onclick="saveSelfServiceRole(this)"]').click({ force: true })
+            // cloud.verifyNotication('Data Saved Successfully!!!')
+        })
+
+        it('Verify newly added Self service role in Manager Eligibilty', () => {
+            cy.visit(Cypress.env('url') + '/Settings/Employee/ESSIndex?module=Leave&submodule=ManagerEligibility')
+            cy.xpath("//div[@id='rolesDiv']//tbody//td").contains(role)
+        })
+
+        it('Set Self service role in Manager Eligibilty', () => {
+            cy.xpath('//input[@value="' + role + '"]').click({ force: true })
+            cy.get('#btnSave').click({ force: true })
+            cloud.verifyNotication('Saved Successfully.!')
+        })
+
+        it('Verify newly added Self service role in Roll Allocation', () => {
+            cy.visit(Cypress.env('url') + 'Settings/Employee/ESSIndex?module=Profile&submodule=RoleAllocation')
+            cy.get('#drpRole').contains(role)
+        })
+        it('Set Self service role For Leave Module', () => {
+            cy.get('#drpModule').select('Leave')
+            cy.get('#drpRole').select(role)
+            cy.xpath("//button[contains(text(),'Search')]").click()
+            cy.wait(1000)
+            cy.get('[class="chk menu"]').eq(0).click()
+            cy.get('[class="chk menu"]').eq(1).click()
+            cy.get('[class="chk menu"]').eq(2).click()
+            cy.get('[class="chk menu"]').eq(3).click()
+            cy.get('[class="chk menu"]').eq(4).click()
+            cy.wait(1000)
+            //click on save button
+            cy.get('#savedata').click()
+            //verify success message 
+            cloud.verifyNotication('Setting Save successfully')
+        })
+    })
+
+    context('Edit Functionality', () => {
+        it('Edit Self Service Role', () => {
+            selectRolesTab()
+            cy.wait(2000)
+            cy.get(".fa-edit").then((element) => {
+                const itemCount = element.length;
+
+                cy.get(".fa-edit").eq(itemCount - 1).click({ force: true })
+
+                cy.get('#EssRole').clear().type(role1);
+                cy.get('#description').clear().type(description1);
+                cy.get('#btnSaveRole').click();
+                cloud.verifyNotication('Role Saved Successfully!!!')
+            })
+
+        })
+
+        it('Verify Edited Self Service Role', () => {
+            cy.wait(2000)
+            cy.get("#organizationbody> .row >div").then((element) => {
+                const itemCount = element.length;
+                cy.log(itemCount)
+                cy.get(".media-body >h4").eq(itemCount - 1).invoke('text').then((roleName) => {
+                    cy.log(roleName)
+                    cy.get(".media-body >h4").eq(itemCount - 1).invoke('text').should('eq', role1)
+                })
+            })
+
+            cy.get(".fa-edit").then((element) => {
+                const itemCount = element.length;
+                //  cy.get(".fa-edit").eq(itemCount - 1).invoke('text').should('eq', role1)
+                cy.get(".fa-edit").eq(itemCount - 1).click({ force: true })
+                cy.get('#EssRole').should('have.value', role1);
+                cy.get('#description').should('have.value', description1);
+            })
+            closeRolePopup()
+        })
+
+        it('Verify new added Self service role in Employee Profile', () => {
+            cy.navigate_EmployeeProfile(employeeId)
+            cy.get('#Profile_SelfServiceRole').click({ force: true })
+            cy.get('#SelfServiceRole').find(':selected').contains(role1)
+            cy.get('#SelfServiceRole').contains(role).should('not.exist')
+        })
+
+        it('Verify newly added Self service role in Manager Eligibilty', () => {
+            cy.visit(Cypress.env('url') + '/Settings/Employee/ESSIndex?module=Leave&submodule=ManagerEligibility')
+            cy.xpath("//div[@id='rolesDiv']//tbody//td").contains(role1)
+            cy.xpath("//div[@id='rolesDiv']//tbody//td").contains(role).should('not.exist')
+        })
+
+        it('Verify newly added Self service role in Roll Allocation', () => {
+            cy.visit(Cypress.env('url') + 'Settings/Employee/ESSIndex?module=Profile&submodule=RoleAllocation')
+            cy.get('#drpRole').contains(role1)
+            cy.get('#drpRole').contains(role).should('not.exist')
+        })
+
+    })
+
+    context('Delete Functionality', () => {
+
+        it('Delete Self Service Role', () => {
+            assignSelfServiceRole(employeeId, 'Admin')
+
+            selectRolesTab()
+            cy.get("#organizationbody> .row >div").then((element) => {
+                const itemCount = element.length;
+                cy.log(itemCount)
+                cy.get(".fa-trash").then((element) => {
+                    const item = element.length;
+                    cy.get(".fa-trash").eq(item - 1).click({ force: true })
+                    cloud.verifyNotication('Role deleted Successfully.')
+                })
+                cy.get("#organizationbody> .row > div").should('have.length', itemCount - 1)
+            })
+        })
+
+        it('Verify new added Self service role in Employee Profile', () => {
+            cy.navigate_EmployeeProfile(employeeId)
+            cy.get('#Profile_SelfServiceRole').click({ force: true })
+            cy.get('#SelfServiceRole').contains(role1).should('not.exist')
+        })
+
+        it('Verify newly added Self service role in Manager Eligibilty', () => {
+            cy.visit(Cypress.env('url') + '/Settings/Employee/ESSIndex?module=Leave&submodule=ManagerEligibility')
+            cy.xpath("//div[@id='rolesDiv']//tbody//td").contains(role1).should('not.exist')
+        })
+
+        it('Verify newly added Self service role in Roll Allocation', () => {
+            cy.visit(Cypress.env('url') + 'Settings/Employee/ESSIndex?module=Profile&submodule=RoleAllocation')
+            cy.get('#drpRole').contains(role1).should('not.exist')
+        })
+
+
+    })
+
+})

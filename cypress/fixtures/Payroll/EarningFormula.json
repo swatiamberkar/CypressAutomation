@@ -1,0 +1,47 @@
+
+
+[	
+
+	
+    {   "FieldName"				: 	"APROJ",
+		"Field"             :  "Arrear Project Allowance",
+		"Dirper"				:	"Direct",
+		"Rounding" 				: 	"1 Rupee",
+		"Formula" 				: 	"",
+		"Percent" 				: 	"",
+		"Maximum" 				: 	"",
+		"Arrear" 				: 	"",
+		"LOP Arrear" 			: 	"",
+		"Supplementary Arrear"	: 	""
+    },
+	
+    
+	
+    {    "FieldName"				:	"AFIELD",
+		"Field"             :  "Arrear Field Allownace",
+		"Dirper"				:	"Direct",
+		"Rounding" 				: 	"1 Rupee",
+		"Formula" 				: 	"",
+		"Percent" 				: 	"",
+		"Maximum" 				: 	"",
+		"Arrear" 				: 	"",
+		"LOP Arrear" 			: 	"",
+		"Supplementary Arrear"	: 	""
+    },
+
+	{   "FieldName"				:	"AHRA",
+	"Field"             :  "Arrear HRA",
+	"Dirper"				:	"Direct",
+	"Rounding" 				: 	"1 Rupee",
+	"Formula" 				: 	"",
+	"Percent" 				: 	"",
+	"Maximum" 				: 	"",
+	"Arrear" 				: 	"",
+	"LOP Arrear" 			: 	"",
+	"Supplementary Arrear"	: 	""
+}
+	
+	
+  
+	
+]

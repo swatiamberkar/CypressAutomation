@@ -1,0 +1,6 @@
+.vs
+allure-report/
+allure-results/
+cypress/screenshots/
+cypress/videos/
+node_modules
